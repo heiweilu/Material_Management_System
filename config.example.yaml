@@ -1,0 +1,23 @@
+# 物料管理系统配置文件
+# 复制此文件为 config.yaml 并按需修改
+
+# 数据库
+database:
+  path: "data/mms.db"
+
+# 主题 (light / dark)
+theme: "light"
+
+# 备份设置
+backup:
+  auto_backup: true          # 启动时自动备份
+  max_backups: 10             # 最多保留备份份数
+  backup_dir: "data/backups"
+
+# 默认值
+defaults:
+  warning_threshold: 10       # 默认低库存预警阈值
+  unit: "个"                  # 默认计量单位
+
+# 日志级别 (DEBUG / INFO / WARNING / ERROR)
+log_level: "INFO"
