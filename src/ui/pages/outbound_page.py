@@ -29,8 +29,8 @@ class OutboundPage(QWidget):
         root.setContentsMargins(16, 12, 16, 12)
 
         self._tabs = QTabWidget()
-        self._tabs.addWidget(self._build_new_order_tab())
-        self._tabs.addWidget(self._build_history_tab())
+        self._tabs.addTab(self._build_new_order_tab(), "新建出库单")
+        self._tabs.addTab(self._build_history_tab(), "历史记录")
         self._tabs.currentChanged.connect(lambda idx: self._refresh_history() if idx == 1 else None)
         root.addWidget(self._tabs)
 

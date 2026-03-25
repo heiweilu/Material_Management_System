@@ -32,9 +32,9 @@ class InboundPage(QWidget):
         self._tabs = QTabWidget()
 
         # Tab 1: 新建入库单
-        self._tabs.addWidget(self._build_new_order_tab())
+        self._tabs.addTab(self._build_new_order_tab(), "新建入库单")
         # Tab 2: 历史记录
-        self._tabs.addWidget(self._build_history_tab())
+        self._tabs.addTab(self._build_history_tab(), "历史记录")
         self._tabs.currentChanged.connect(lambda idx: self._refresh_history() if idx == 1 else None)
 
         root.addWidget(self._tabs)
