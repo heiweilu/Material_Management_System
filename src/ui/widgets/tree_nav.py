@@ -6,22 +6,18 @@ from PyQt6.QtGui import QFont
 
 # 导航节点定义: (显示文本, page_key 或 None 表示纯分组, 子节点列表)
 NAV_TREE = [
-    ("📋 物料管理", None, [
+    ("物料管理", None, [
         ("物料列表", "material"),
         ("分类管理", "category"),
     ]),
-    ("📥 入库管理", "inbound", []),
-    ("📤 出库管理", "outbound", []),
-    ("📊 库存中心", None, [
+    ("库存中心", None, [
         ("库存总览", "inventory"),
-        ("报表统计", "report"),
     ]),
-    ("🏢 供应商管理", "supplier", []),
-    ("🔄 数据管理", None, [
+    ("数据管理", None, [
         ("导入导出", "import_export"),
         ("备份恢复", "backup"),
     ]),
-    ("⚙️ 系统设置", "settings", []),
+    ("系统设置", "settings", []),
 ]
 
 PAGE_KEY_ROLE = Qt.ItemDataRole.UserRole

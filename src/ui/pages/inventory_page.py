@@ -58,7 +58,7 @@ class InventoryPage(QWidget):
 
         # 标题栏
         top = QHBoxLayout()
-        title = QLabel("📊 库存总览")
+        title = QLabel("库存总览")
         title.setStyleSheet("font-size: 16px; font-weight: bold;")
         top.addWidget(title)
         top.addStretch()
@@ -80,17 +80,18 @@ class InventoryPage(QWidget):
         root.addLayout(cards)
 
         # 低库存预警表
-        warn_label = QLabel("⚠️ 低库存物料清单")
+        warn_label = QLabel("低库存物料清单")
         warn_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 12px;")
         root.addWidget(warn_label)
 
         self._table = QTableWidget()
-        self._table.setColumnCount(7)
+        self._table.setColumnCount(6)
         self._table.setHorizontalHeaderLabels([
-            "物料编码", "物料名称", "型号", "封装", "当前库存", "预警阈值", "存放位置",
+            "物料名称", "型号", "封装", "当前库存", "预警阈值", "存放位置",
         ])
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self._table.verticalHeader().setVisible(False)
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._table.setAlternatingRowColors(True)
@@ -116,7 +117,7 @@ class InventoryPage(QWidget):
         low_fg = QColor("#DC2626")
 
         for row, m in enumerate(warn_list):
-            vals = [m.material_code, m.material_name, m.model, m.package_type,
+            vals = [m.material_name, m.model, m.package_type,
                     str(m.current_stock), str(m.warning_threshold), m.storage_location]
             for col, val in enumerate(vals):
                 item = QTableWidgetItem(str(val) if val else "")

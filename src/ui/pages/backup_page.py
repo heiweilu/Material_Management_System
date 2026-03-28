@@ -29,7 +29,7 @@ class BackupPage(QWidget):
         root = QVBoxLayout(self)
         root.setContentsMargins(16, 12, 16, 12)
 
-        title = QLabel("💾 备份恢复")
+        title = QLabel("备份恢复")
         title.setStyleSheet("font-size: 16px; font-weight: bold;")
         root.addWidget(title)
 

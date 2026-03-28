@@ -27,7 +27,7 @@ class ImportExportPage(QWidget):
         root = QVBoxLayout(self)
         root.setContentsMargins(16, 12, 16, 12)
 
-        title = QLabel("🔄 数据导入导出")
+        title = QLabel("数据导入导出")
         title.setStyleSheet("font-size: 16px; font-weight: bold;")
         root.addWidget(title)
 
@@ -40,12 +40,12 @@ class ImportExportPage(QWidget):
         export_layout.addWidget(export_desc)
 
         export_btns = QHBoxLayout()
-        btn_xlsx = QPushButton("📊 导出 Excel")
+        btn_xlsx = QPushButton("导出 Excel")
         btn_xlsx.setObjectName("primaryButton")
         btn_xlsx.clicked.connect(self._export_xlsx)
         export_btns.addWidget(btn_xlsx)
 
-        btn_csv = QPushButton("📄 导出 CSV")
+        btn_csv = QPushButton("导出 CSV")
         btn_csv.clicked.connect(self._export_csv)
         export_btns.addWidget(btn_csv)
         export_btns.addStretch()
@@ -59,7 +59,7 @@ class ImportExportPage(QWidget):
 
         import_desc = QLabel(
             "从 Excel (.xlsx) 或 CSV (.csv) 文件导入物料。\n"
-            "必需列: material_code, material_name, unit\n"
+            "必需列: material_name, unit\n"
             "可选列: model, package_type, specification, warning_threshold, "
             "storage_location, category_path (如: 电阻/贴片电阻), remarks"
         )
@@ -67,12 +67,12 @@ class ImportExportPage(QWidget):
         import_layout.addWidget(import_desc)
 
         import_btns = QHBoxLayout()
-        btn_import = QPushButton("📥 选择文件导入")
+        btn_import = QPushButton("选择文件导入")
         btn_import.setObjectName("primaryButton")
         btn_import.clicked.connect(self._import_file)
         import_btns.addWidget(btn_import)
 
-        btn_template = QPushButton("📋 下载导入模板")
+        btn_template = QPushButton("下载导入模板")
         btn_template.clicked.connect(self._download_template)
         import_btns.addWidget(btn_template)
         import_btns.addStretch()
@@ -96,14 +96,14 @@ class ImportExportPage(QWidget):
 
     # ── 导出 ─────────────────────────────────
     _EXPORT_HEADERS = [
-        "material_code", "material_name", "model", "package_type",
+        "material_name", "model", "package_type",
         "specification", "unit", "current_stock", "warning_threshold",
         "storage_location", "datasheet_path", "remarks",
     ]
 
     def _get_export_rows(self) -> list[list]:
         with get_session() as s:
-            mats = s.query(Material).order_by(Material.material_code).all()
+            mats = s.query(Material).order_by(Material.material_name).all()
             rows = []
             for m in mats:
                 rows.append([getattr(m, h, "") or "" for h in self._EXPORT_HEADERS])
@@ -124,7 +124,7 @@ class ImportExportPage(QWidget):
             for row in self._get_export_rows():
                 ws.append(row)
             wb.save(path)
-            self._log.append(f"✅ 已导出 Excel: {path}")
+            self._log.append(f"[OK] 已导出 Excel: {path}")
             Toast.show(self, "Excel 导出成功", "success")
         except Exception as e:
             QMessageBox.warning(self, "导出失败", str(e))
@@ -140,7 +140,7 @@ class ImportExportPage(QWidget):
                 writer = csv.writer(f)
                 writer.writerow(self._EXPORT_HEADERS)
                 writer.writerows(self._get_export_rows())
-            self._log.append(f"✅ 已导出 CSV: {path}")
+            self._log.append(f"[OK] 已导出 CSV: {path}")
             Toast.show(self, "CSV 导出成功", "success")
         except Exception as e:
             QMessageBox.warning(self, "导出失败", str(e))
@@ -198,11 +198,10 @@ class ImportExportPage(QWidget):
 
         for i, row in enumerate(rows):
             self._progress.setValue(i + 1)
-            code = row.get("material_code", "").strip()
             name = row.get("material_name", "").strip()
             unit = row.get("unit", "个").strip()
 
-            if not code or not name:
+            if not name:
                 skipped += 1
                 continue
 
@@ -217,7 +216,6 @@ class ImportExportPage(QWidget):
                     pass
 
             data = {
-                "material_code": code,
                 "material_name": name,
                 "model": row.get("model", ""),
                 "package_type": row.get("package_type", ""),
@@ -234,11 +232,11 @@ class ImportExportPage(QWidget):
                 material_service.create_material(data)
                 success += 1
             except Exception as e:
-                errors.append(f"行{i+2} [{code}]: {e}")
+                errors.append(f"行{i+2} [{name}]: {e}")
 
         self._progress.setVisible(False)
         msg = f"导入完成: 成功 {success}, 跳过 {skipped}, 失败 {len(errors)}"
-        self._log.append(f"📥 {msg} (来源: {source})")
+        self._log.append(f"[导入] {msg} (来源: {source})")
         if errors:
             self._log.append("  失败详情:\n  " + "\n  ".join(errors[:20]))
         Toast.show(self, msg, "success" if not errors else "warning")
@@ -256,19 +254,19 @@ class ImportExportPage(QWidget):
             ws = wb.active
             ws.title = "物料导入模板"
             headers = [
-                "material_code", "material_name", "model", "package_type",
+                "material_name", "model", "package_type",
                 "specification", "unit", "warning_threshold",
                 "storage_location", "category_path", "remarks",
             ]
             ws.append(headers)
             # 示例行
             ws.append([
-                "R-0805-100R", "贴片电阻 100Ω", "RC0805FR-07100RL",
+                "贴片电阻 100Ω", "RC0805FR-07100RL",
                 "0805", "100Ω ±1% 1/8W", "个", 10,
                 "抽屉A-3", "电阻/贴片电阻", "常用阻值",
             ])
             wb.save(path)
-            self._log.append(f"📋 模板已保存: {path}")
+            self._log.append(f"[模板] 已保存: {path}")
             Toast.show(self, "模板已保存", "success")
         except Exception as e:
             QMessageBox.warning(self, "保存失败", str(e))

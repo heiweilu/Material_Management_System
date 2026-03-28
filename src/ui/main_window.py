@@ -14,11 +14,7 @@ from src.ui.widgets.tree_nav import TreeNav
 # 页面延迟导入映射
 from src.ui.pages.material_page import MaterialPage
 from src.ui.pages.category_page import CategoryPage
-from src.ui.pages.inbound_page import InboundPage
-from src.ui.pages.outbound_page import OutboundPage
 from src.ui.pages.inventory_page import InventoryPage
-from src.ui.pages.report_page import ReportPage
-from src.ui.pages.supplier_page import SupplierPage
 from src.ui.pages.import_export_page import ImportExportPage
 from src.ui.pages.backup_page import BackupPage
 from src.ui.pages.settings_page import SettingsPage
@@ -58,12 +54,13 @@ class MainWindow(QMainWindow):
         sidebar = QWidget()
         sidebar.setFixedWidth(220)
         sidebar.setObjectName("sidebar")
+        sidebar.setAutoFillBackground(True)
         sidebar_layout = QVBoxLayout(sidebar)
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
 
         # Logo / 标题
-        title_label = QLabel("🏭 物料管理系统")
+        title_label = QLabel("物料管理系统")
         title_label.setObjectName("app_title")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sidebar_layout.addWidget(title_label)
@@ -99,11 +96,7 @@ class MainWindow(QMainWindow):
         pages = [
             ("material", MaterialPage(self.config)),
             ("category", CategoryPage(self.config)),
-            ("inbound", InboundPage(self.config)),
-            ("outbound", OutboundPage(self.config)),
             ("inventory", InventoryPage(self.config)),
-            ("report", ReportPage(self.config)),
-            ("supplier", SupplierPage(self.config)),
             ("import_export", ImportExportPage(self.config)),
             ("backup", BackupPage(self.config)),
             ("settings", SettingsPage(self.config)),
@@ -124,11 +117,21 @@ class MainWindow(QMainWindow):
 
     # ── 主题 ─────────────────────────────────────────────────
 
+    # 主题名 → QSS 文件映射
+    _THEME_FILES = {
+        "frosted_light": "style.qss",
+        "frosted_dark": "dark.qss",
+        "felt": "felt.qss",
+        "marble": "marble.qss",
+        # 兼容旧配置
+        "light": "style.qss",
+        "dark": "dark.qss",
+    }
+
     def _apply_theme(self, theme_name: str):
         """加载并应用 QSS 主题"""
-        theme_file = ROOT_DIR / "src" / "ui" / "theme" / (
-            "dark.qss" if theme_name == "dark" else "style.qss"
-        )
+        qss_name = self._THEME_FILES.get(theme_name, "style.qss")
+        theme_file = ROOT_DIR / "src" / "ui" / "theme" / qss_name
         if theme_file.exists():
             qss = theme_file.read_text(encoding="utf-8")
             self.setStyleSheet(qss)

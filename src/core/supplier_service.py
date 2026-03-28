@@ -17,7 +17,9 @@ def get_all_suppliers(active_only: bool = False) -> list[Supplier]:
         q = session.query(Supplier)
         if active_only:
             q = q.filter(Supplier.status == "active")
-        return q.order_by(Supplier.supplier_name).all()
+        results = q.order_by(Supplier.supplier_name).all()
+        session.expunge_all()
+        return results
     finally:
         session.close()
 
@@ -26,13 +28,15 @@ def search_suppliers(keyword: str) -> list[Supplier]:
     session = get_session()
     try:
         like = f"%{keyword}%"
-        return session.query(Supplier).filter(
+        results = session.query(Supplier).filter(
             or_(
                 Supplier.supplier_name.ilike(like),
                 Supplier.contact_person.ilike(like),
                 Supplier.phone.ilike(like),
             )
         ).order_by(Supplier.supplier_name).all()
+        session.expunge_all()
+        return results
     finally:
         session.close()
 

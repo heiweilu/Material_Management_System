@@ -1,30 +1,42 @@
-/* Light 主题 — 物料管理系统 */
+/* 毛玻璃 (Frosted Glass) 亮色主题 — 物料管理系统 */
 
 /* ─ 全局 ─ */
 QMainWindow {
-    background-color: #F8FAFC;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #E8EDF5, stop:0.3 #DAEAF6, stop:0.7 #E5E0F0, stop:1 #F0E8EF);
+}
+
+QWidget {
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+}
+
+QWidget#sidebar {
+    background-color: rgba(255, 255, 255, 0.35);
+    border-right: 1px solid rgba(165, 180, 252, 0.25);
 }
 
 /* ─ 树形导航 ─ */
 QTreeWidget#nav_tree {
-    background-color: #F1F5F9;
+    background-color: rgba(255, 255, 255, 0.55);
     border: none;
-    border-right: 1px solid #D9E2EC;
+    border-right: 1px solid rgba(255, 255, 255, 0.6);
     padding: 8px 0;
     font-size: 13px;
+    color: #334155;
 }
 QTreeWidget#nav_tree::item {
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px 14px;
+    border-radius: 8px;
     margin: 2px 8px;
     color: #475569;
 }
 QTreeWidget#nav_tree::item:hover {
-    background-color: #E2E8F0;
+    background-color: rgba(255, 255, 255, 0.6);
 }
 QTreeWidget#nav_tree::item:selected {
-    background-color: #DBEAFE;
-    color: #1D4ED8;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(99, 102, 241, 0.25), stop:1 rgba(139, 92, 246, 0.18));
+    color: #4338CA;
     font-weight: bold;
 }
 QTreeWidget#nav_tree::branch {
@@ -35,121 +47,155 @@ QTreeWidget#nav_tree::branch {
 QLabel#app_title {
     font-size: 18px;
     font-weight: bold;
-    color: #1E40AF;
+    color: #4338CA;
     padding: 16px 12px 8px 12px;
 }
 
 /* ─ 状态栏 ─ */
 QStatusBar {
-    background-color: #F1F5F9;
-    border-top: 1px solid #D9E2EC;
+    background-color: rgba(255, 255, 255, 0.45);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
     color: #64748B;
     font-size: 12px;
 }
 
+/* ─ 通用标签 ─ */
+QLabel {
+    color: #334155;
+}
+
 /* ─ 表格 ─ */
-QTableView {
-    background-color: white;
-    alternate-background-color: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    gridline-color: #E2E8F0;
-    selection-background-color: #DBEAFE;
-    selection-color: #1E40AF;
+QTableWidget, QTableView {
+    background-color: rgba(255, 255, 255, 0.65);
+    alternate-background-color: rgba(248, 250, 252, 0.55);
+    border: 1px solid rgba(203, 213, 225, 0.5);
+    border-radius: 10px;
+    gridline-color: rgba(203, 213, 225, 0.4);
+    selection-background-color: rgba(99, 102, 241, 0.15);
+    selection-color: #312E81;
     font-size: 13px;
+    color: #334155;
 }
 QHeaderView::section {
-    background-color: #F1F5F9;
+    background-color: rgba(241, 245, 249, 0.7);
     border: none;
-    border-bottom: 2px solid #CBD5E1;
+    border-bottom: 2px solid rgba(165, 180, 252, 0.5);
     padding: 8px;
     font-weight: bold;
-    color: #334155;
+    color: #4338CA;
 }
 
 /* ─ 按钮 ─ */
 QPushButton {
-    background-color: #3B82F6;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 rgba(99, 102, 241, 0.85), stop:1 rgba(139, 92, 246, 0.85));
     color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 18px;
     font-size: 13px;
     min-height: 32px;
 }
 QPushButton:hover {
-    background-color: #2563EB;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 rgba(79, 70, 229, 0.95), stop:1 rgba(124, 58, 237, 0.95));
 }
 QPushButton:pressed {
-    background-color: #1D4ED8;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #4338CA, stop:1 #6D28D9);
 }
 QPushButton:disabled {
-    background-color: #94A3B8;
+    background-color: rgba(148, 163, 184, 0.4);
+    color: rgba(100, 116, 139, 0.6);
+    border: 1px solid rgba(203, 213, 225, 0.3);
 }
 QPushButton[secondary="true"] {
-    background-color: #E2E8F0;
-    color: #334155;
+    background-color: rgba(255, 255, 255, 0.55);
+    color: #475569;
+    border: 1px solid rgba(203, 213, 225, 0.6);
 }
 QPushButton[secondary="true"]:hover {
-    background-color: #CBD5E1;
+    background-color: rgba(255, 255, 255, 0.75);
 }
 QPushButton[danger="true"] {
-    background-color: #EF4444;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 rgba(239, 68, 68, 0.85), stop:1 rgba(220, 38, 38, 0.85));
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 QPushButton[danger="true"]:hover {
-    background-color: #DC2626;
+    background: rgba(220, 38, 38, 0.95);
 }
 
 /* ─ 输入框 ─ */
 QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
-    border: 1px solid #CBD5E1;
-    border-radius: 6px;
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    border-radius: 8px;
     padding: 6px 10px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.65);
     font-size: 13px;
     min-height: 28px;
+    color: #334155;
 }
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
-    border-color: #3B82F6;
+    border-color: rgba(99, 102, 241, 0.7);
+    background-color: rgba(255, 255, 255, 0.85);
 }
 QComboBox::drop-down {
     border: none;
     width: 24px;
 }
+QComboBox QAbstractItemView {
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    border-radius: 6px;
+    selection-background-color: rgba(99, 102, 241, 0.15);
+    color: #334155;
+}
+
+QTextEdit {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    border-radius: 8px;
+    padding: 6px;
+    color: #334155;
+}
 
 /* ─ GroupBox ─ */
 QGroupBox {
     font-weight: bold;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
+    border: 1px solid rgba(165, 180, 252, 0.35);
+    border-radius: 10px;
     margin-top: 12px;
     padding-top: 16px;
+    background-color: rgba(255, 255, 255, 0.35);
+    color: #334155;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     left: 12px;
     padding: 0 6px;
-    color: #334155;
+    color: #4338CA;
 }
 
 /* ─ TabWidget ─ */
 QTabWidget::pane {
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    background: white;
+    border: 1px solid rgba(165, 180, 252, 0.35);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.4);
 }
 QTabBar::tab {
-    background: #F1F5F9;
-    border: 1px solid #E2E8F0;
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(165, 180, 252, 0.25);
     border-bottom: none;
     padding: 8px 20px;
     margin-right: 2px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    color: #475569;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    color: #64748B;
 }
 QTabBar::tab:selected {
-    background: white;
-    color: #1D4ED8;
+    background: rgba(255, 255, 255, 0.65);
+    color: #4338CA;
     font-weight: bold;
 }
 
@@ -159,13 +205,61 @@ QScrollBar:vertical {
     width: 8px;
 }
 QScrollBar::handle:vertical {
-    background: #CBD5E1;
+    background: rgba(165, 180, 252, 0.45);
     border-radius: 4px;
     min-height: 30px;
 }
 QScrollBar::handle:vertical:hover {
-    background: #94A3B8;
+    background: rgba(99, 102, 241, 0.55);
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0;
+}
+
+/* ─ 进度条 ─ */
+QProgressBar {
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+    color: #4338CA;
+    font-size: 12px;
+}
+QProgressBar::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(99, 102, 241, 0.7), stop:1 rgba(139, 92, 246, 0.7));
+    border-radius: 5px;
+}
+
+/* ─ 对话框 ─ */
+QDialog {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #EEF0F7, stop:0.5 #E8EAF6, stop:1 #F0EBF4);
+}
+
+/* ─ 菜单 ─ */
+QMenu {
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    border-radius: 8px;
+    padding: 4px;
+}
+QMenu::item {
+    padding: 6px 20px;
+    border-radius: 4px;
+    color: #334155;
+}
+QMenu::item:selected {
+    background-color: rgba(99, 102, 241, 0.12);
+    color: #4338CA;
+}
+
+/* ─ ToolTip ─ */
+QToolTip {
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(165, 180, 252, 0.5);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #334155;
+    font-size: 12px;
 }

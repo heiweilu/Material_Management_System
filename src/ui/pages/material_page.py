@@ -18,7 +18,6 @@ class MaterialPage(QWidget):
     """物料管理 - 物料列表"""
 
     _COLUMNS = [
-        ("物料编码", "material_code"),
         ("物料名称", "material_name"),
         ("型号", "model"),
         ("封装", "package_type"),
@@ -27,7 +26,6 @@ class MaterialPage(QWidget):
         ("当前库存", "current_stock"),
         ("预警阈值", "warning_threshold"),
         ("分类", "_category_name"),
-        ("供应商", "_supplier_name"),
         ("存放位置", "storage_location"),
     ]
 
@@ -47,7 +45,7 @@ class MaterialPage(QWidget):
         # 顶栏: 搜索 + 分类筛选 + 按钮
         top = QHBoxLayout()
 
-        self._search = SearchBar(placeholder="搜索物料编码/名称/型号/规格…")
+        self._search = SearchBar(placeholder="搜索物料名称/型号/规格…")
         self._search.search_triggered.connect(self._on_search)
         top.addWidget(self._search, 3)
 
@@ -80,10 +78,12 @@ class MaterialPage(QWidget):
         self._table.setHorizontalHeaderLabels([c[0] for c in self._COLUMNS])
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self._table.verticalHeader().setVisible(False)
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._table.setAlternatingRowColors(True)
+        self._table.setShowGrid(True)
         self._table.doubleClicked.connect(self._on_edit)
         root.addWidget(self._table)
 
@@ -126,13 +126,10 @@ class MaterialPage(QWidget):
         for row, m in enumerate(self._materials):
             is_low = (m.current_stock <= m.warning_threshold)
             cat_name = m.category.name if m.category else ""
-            sup_name = m.default_supplier.supplier_name if m.default_supplier else ""
 
             for col, (_, attr) in enumerate(self._COLUMNS):
                 if attr == "_category_name":
                     val = cat_name
-                elif attr == "_supplier_name":
-                    val = sup_name
                 else:
                     val = getattr(m, attr, "")
                 item = QTableWidgetItem(str(val) if val is not None else "")
@@ -168,17 +165,17 @@ class MaterialPage(QWidget):
             return
         m = self._materials[row]
         data = {
-            "material_code": m.material_code,
             "material_name": m.material_name,
             "model": m.model,
             "package_type": m.package_type,
             "specification": m.specification,
             "unit": m.unit,
+            "current_stock": m.current_stock,
             "warning_threshold": m.warning_threshold,
             "category_id": m.category_id,
-            "default_supplier_id": m.default_supplier_id,
             "storage_location": m.storage_location,
             "datasheet_path": m.datasheet_path,
+            "image_path": getattr(m, "image_path", ""),
             "remarks": m.remarks,
         }
         dlg = MaterialDialog(self, material_data=data)
@@ -198,7 +195,7 @@ class MaterialPage(QWidget):
         m = self._materials[row]
         reply = QMessageBox.question(
             self, "确认删除",
-            f"确定要删除物料 [{m.material_code}] {m.material_name} 吗？",
+            f"确定要删除物料 [{m.material_name}] 吗？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:

@@ -40,12 +40,18 @@ def _run_sqlite_migrations():
         new_cols = [
             ("storage_location", "VARCHAR(200)", "''"),
             ("datasheet_path", "VARCHAR(500)", "''"),
+            ("image_path", "VARCHAR(500)", "''"),
         ]
         for col_name, sql_type, default in new_cols:
             if col_name not in cols:
                 statements.append(
                     f"ALTER TABLE materials ADD COLUMN {col_name} {sql_type} DEFAULT {default}"
                 )
+
+        # v2 迁移：移除 material_code 和 default_supplier_id 列
+        # SQLite 不支持 DROP COLUMN（3.35.0 之前），用重建表方式处理
+        if "material_code" in cols or "default_supplier_id" in cols:
+            _migrate_materials_v2()
 
     # ── 未来新增迁移在此追加 ──
 
@@ -56,6 +62,34 @@ def _run_sqlite_migrations():
         for stmt in statements:
             logger.info("执行迁移: %s", stmt)
             conn.execute(text(stmt))
+
+
+def _migrate_materials_v2():
+    """重建 materials 表，移除 material_code 和 default_supplier_id 列。"""
+    logger.info("执行 v2 迁移：重建 materials 表（移除 material_code, default_supplier_id）")
+    keep_cols = [
+        "id", "material_name", "model", "package_type", "specification",
+        "unit", "current_stock", "warning_threshold", "category_id",
+        "storage_location", "datasheet_path", "image_path",
+        "remarks", "created_at", "updated_at",
+    ]
+    cols_csv = ", ".join(keep_cols)
+
+    with _engine.begin() as conn:
+        # 检查旧表实际拥有哪些列，只复制两边都有的
+        inspector = inspect(_engine)
+        old_cols = {c["name"] for c in inspector.get_columns("materials")}
+        actual_cols = [c for c in keep_cols if c in old_cols]
+        actual_csv = ", ".join(actual_cols)
+
+        conn.execute(text(f"ALTER TABLE materials RENAME TO _materials_old"))
+        # 通过 ORM 定义创建新表
+        Base.metadata.tables["materials"].create(bind=_engine)
+        conn.execute(text(
+            f"INSERT INTO materials ({actual_csv}) SELECT {actual_csv} FROM _materials_old"
+        ))
+        conn.execute(text("DROP TABLE _materials_old"))
+    logger.info("v2 迁移完成")
 
 
 def get_session() -> Session:

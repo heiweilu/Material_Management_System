@@ -30,8 +30,18 @@ class Toast(QLabel):
 
         px = (parent.width() - self.width()) // 2
         self.move(px, 40)
-        self.show()
+        super().show()
         self.raise_()
+
+        self._opacity = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self._opacity)
+        QTimer.singleShot(duration, self._fade_out)
+
+    @staticmethod
+    def show(parent: QWidget, message: str, toast_type: str = "info",
+             duration: int = 2500) -> "Toast":
+        """工厂方法：在 parent 上显示一条 Toast"""
+        return Toast(parent, message, toast_type, duration)
 
         self._opacity = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(self._opacity)

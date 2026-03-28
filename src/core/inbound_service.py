@@ -2,18 +2,30 @@
 
 from datetime import datetime
 
+from sqlalchemy.orm import joinedload
+
 from src.db.database import get_session
 from src.db.models import InboundOrder, InboundDetail, Material, OperationLog
 
 
 def get_all_orders() -> list[InboundOrder]:
-    with get_session() as s:
-        return s.query(InboundOrder).order_by(InboundOrder.created_at.desc()).all()
+    session = get_session()
+    try:
+        results = session.query(InboundOrder).options(
+            joinedload(InboundOrder.supplier),
+        ).order_by(InboundOrder.created_at.desc()).all()
+        session.expunge_all()
+        return results
+    finally:
+        session.close()
 
 
 def get_order_by_id(order_id: int) -> InboundOrder | None:
-    with get_session() as s:
-        return s.get(InboundOrder, order_id)
+    session = get_session()
+    try:
+        return session.get(InboundOrder, order_id)
+    finally:
+        session.close()
 
 
 def create_order(header: dict, details: list[dict]) -> InboundOrder:
@@ -22,7 +34,9 @@ def create_order(header: dict, details: list[dict]) -> InboundOrder:
     header: {inbound_no, supplier_id, inbound_date, remarks}
     details: [{material_id, quantity, unit_price, remarks}, ...]
     """
-    with get_session() as s:
+    session = get_session()
+    try:
+        s = session
         order = InboundOrder(
             inbound_no=header["inbound_no"],
             supplier_id=header.get("supplier_id"),
@@ -55,39 +69,53 @@ def create_order(header: dict, details: list[dict]) -> InboundOrder:
         s.commit()
         s.refresh(order)
         return order
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def delete_order(order_id: int):
     """删除入库单并回退库存"""
-    with get_session() as s:
-        order = s.get(InboundOrder, order_id)
+    session = get_session()
+    try:
+        order = session.get(InboundOrder, order_id)
         if not order:
             raise ValueError("入库单不存在")
         for detail in order.details:
-            mat = s.get(Material, detail.material_id)
+            mat = session.get(Material, detail.material_id)
             if mat:
                 mat.current_stock = max(0, mat.current_stock - detail.quantity)
-        s.add(OperationLog(
+        session.add(OperationLog(
             operation_type="delete",
             target_type="inbound_order",
             target_id=order.id,
             description=f"删除入库单 {order.inbound_no}",
         ))
-        s.delete(order)
-        s.commit()
+        session.delete(order)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def generate_inbound_no() -> str:
     """生成入库单号: IN-yyyyMMdd-xxxx"""
     today = datetime.now().strftime("%Y%m%d")
     prefix = f"IN-{today}-"
-    with get_session() as s:
+    session = get_session()
+    try:
         last = (
-            s.query(InboundOrder)
+            session.query(InboundOrder)
             .filter(InboundOrder.inbound_no.like(f"{prefix}%"))
             .order_by(InboundOrder.inbound_no.desc())
             .first()
         )
+    finally:
+        session.close()
     if last:
         seq = int(last.inbound_no.split("-")[-1]) + 1
     else:

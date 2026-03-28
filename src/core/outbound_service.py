@@ -7,13 +7,21 @@ from src.db.models import OutboundOrder, OutboundDetail, Material, OperationLog
 
 
 def get_all_orders() -> list[OutboundOrder]:
-    with get_session() as s:
-        return s.query(OutboundOrder).order_by(OutboundOrder.created_at.desc()).all()
+    session = get_session()
+    try:
+        results = session.query(OutboundOrder).order_by(OutboundOrder.created_at.desc()).all()
+        session.expunge_all()
+        return results
+    finally:
+        session.close()
 
 
 def get_order_by_id(order_id: int) -> OutboundOrder | None:
-    with get_session() as s:
-        return s.get(OutboundOrder, order_id)
+    session = get_session()
+    try:
+        return session.get(OutboundOrder, order_id)
+    finally:
+        session.close()
 
 
 def create_order(header: dict, details: list[dict]) -> OutboundOrder:
@@ -22,7 +30,9 @@ def create_order(header: dict, details: list[dict]) -> OutboundOrder:
     header: {outbound_no, outbound_date, recipient, remarks}
     details: [{material_id, quantity, remarks}, ...]
     """
-    with get_session() as s:
+    session = get_session()
+    try:
+        s = session
         # 先检查库存是否充足
         for d in details:
             mat = s.get(Material, d["material_id"])
@@ -64,39 +74,53 @@ def create_order(header: dict, details: list[dict]) -> OutboundOrder:
         s.commit()
         s.refresh(order)
         return order
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def delete_order(order_id: int):
     """删除出库单并回退库存"""
-    with get_session() as s:
-        order = s.get(OutboundOrder, order_id)
+    session = get_session()
+    try:
+        order = session.get(OutboundOrder, order_id)
         if not order:
             raise ValueError("出库单不存在")
         for detail in order.details:
-            mat = s.get(Material, detail.material_id)
+            mat = session.get(Material, detail.material_id)
             if mat:
                 mat.current_stock += detail.quantity
-        s.add(OperationLog(
+        session.add(OperationLog(
             operation_type="delete",
             target_type="outbound_order",
             target_id=order.id,
             description=f"删除出库单 {order.outbound_no}",
         ))
-        s.delete(order)
-        s.commit()
+        session.delete(order)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def generate_outbound_no() -> str:
     """生成出库单号: OUT-yyyyMMdd-xxxx"""
     today = datetime.now().strftime("%Y%m%d")
     prefix = f"OUT-{today}-"
-    with get_session() as s:
+    session = get_session()
+    try:
         last = (
-            s.query(OutboundOrder)
+            session.query(OutboundOrder)
             .filter(OutboundOrder.outbound_no.like(f"{prefix}%"))
             .order_by(OutboundOrder.outbound_no.desc())
             .first()
         )
+    finally:
+        session.close()
     if last:
         seq = int(last.outbound_no.split("-")[-1]) + 1
     else:

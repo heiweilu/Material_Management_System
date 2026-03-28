@@ -12,7 +12,9 @@ def get_all_categories() -> list[Category]:
     """获取所有分类（平铺列表）"""
     session = get_session()
     try:
-        return session.query(Category).order_by(Category.sort_order, Category.name).all()
+        results = session.query(Category).order_by(Category.sort_order, Category.name).all()
+        session.expunge_all()
+        return results
     finally:
         session.close()
 
@@ -21,9 +23,11 @@ def get_root_categories() -> list[Category]:
     """获取顶级分类"""
     session = get_session()
     try:
-        return session.query(Category).filter(
+        results = session.query(Category).filter(
             Category.parent_id.is_(None)
         ).order_by(Category.sort_order, Category.name).all()
+        session.expunge_all()
+        return results
     finally:
         session.close()
 
@@ -31,9 +35,11 @@ def get_root_categories() -> list[Category]:
 def get_children(parent_id: int) -> list[Category]:
     session = get_session()
     try:
-        return session.query(Category).filter(
+        results = session.query(Category).filter(
             Category.parent_id == parent_id
         ).order_by(Category.sort_order, Category.name).all()
+        session.expunge_all()
+        return results
     finally:
         session.close()
 

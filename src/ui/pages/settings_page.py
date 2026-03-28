@@ -23,7 +23,7 @@ class SettingsPage(QWidget):
         root = QVBoxLayout(self)
         root.setContentsMargins(16, 12, 16, 12)
 
-        title = QLabel("⚙️ 系统设置")
+        title = QLabel("系统设置")
         title.setStyleSheet("font-size: 16px; font-weight: bold;")
         root.addWidget(title)
 
@@ -32,12 +32,22 @@ class SettingsPage(QWidget):
         theme_form = QFormLayout()
 
         self._theme_combo = QComboBox()
-        self._theme_combo.addItems(["light", "dark"])
-        current_theme = self.config.get("theme", "light")
-        idx = self._theme_combo.findText(current_theme)
+        themes = [
+            ("frosted_light", "🔵 毛玻璃 (亮色)"),
+            ("frosted_dark", "🔵 毛玻璃 (暗色)"),
+            ("felt", "🟤 毛毡垫"),
+            ("marble", "⚪ 大理石"),
+        ]
+        for key, label in themes:
+            self._theme_combo.addItem(label, key)
+        current_theme = self.config.get("theme", "frosted_light")
+        # 兼容旧配置
+        compat = {"light": "frosted_light", "dark": "frosted_dark"}
+        current_theme = compat.get(current_theme, current_theme)
+        idx = self._theme_combo.findData(current_theme)
         if idx >= 0:
             self._theme_combo.setCurrentIndex(idx)
-        theme_form.addRow("主题", self._theme_combo)
+        theme_form.addRow("主题风格", self._theme_combo)
         theme_group.setLayout(theme_form)
         root.addWidget(theme_group)
 
@@ -86,7 +96,7 @@ class SettingsPage(QWidget):
         # 保存按钮
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        btn_save = QPushButton("💾 保存设置")
+        btn_save = QPushButton("保存设置")
         btn_save.setObjectName("primaryButton")
         btn_save.clicked.connect(self._on_save)
         btn_row.addWidget(btn_save)
@@ -95,7 +105,7 @@ class SettingsPage(QWidget):
         root.addStretch()
 
     def _on_save(self):
-        new_theme = self._theme_combo.currentText()
+        new_theme = self._theme_combo.currentData()
         self.config["theme"] = new_theme
         self.config.setdefault("defaults", {})["warning_threshold"] = self._threshold_spin.value()
         self.config.setdefault("defaults", {})["unit"] = self._unit_edit.text().strip() or "个"
