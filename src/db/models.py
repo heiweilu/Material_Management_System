@@ -56,6 +56,7 @@ class Material(Base):
     warning_threshold = Column(Integer, nullable=False, default=10)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     storage_location = Column(String(200), default="")   # 存放位置（抽屉A-3）
+    supplier = Column(String(200), default="")           # 供应商名称（纯文本）
     datasheet_path = Column(String(500), default="")     # 数据手册路径或URL
     image_path = Column(String(500), default="")         # 物料图片路径
     remarks = Column(Text, default="")

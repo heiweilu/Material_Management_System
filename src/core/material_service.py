@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
+from sqlalchemy import distinct
 
 from src.db.database import get_session
 from src.db.models import Material, OperationLog
@@ -134,6 +135,18 @@ def get_low_stock_materials() -> list[Material]:
         ).order_by(Material.current_stock).all()
         session.expunge_all()
         return results
+    finally:
+        session.close()
+
+
+def get_distinct_suppliers() -> list[str]:
+    """获取所有已使用的供应商名称（去重），用于可编辑下拉框补全"""
+    session = get_session()
+    try:
+        rows = session.query(distinct(Material.supplier)).filter(
+            Material.supplier != "", Material.supplier.isnot(None)
+        ).order_by(Material.supplier).all()
+        return [r[0] for r in rows]
     finally:
         session.close()
 

@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtCore import QUrl
 
-from src.core import category_service
+from src.core import category_service, material_service
 
 
 class MaterialDialog(QDialog):
@@ -55,24 +55,36 @@ class MaterialDialog(QDialog):
         self._spec_edit.setPlaceholderText("如: 100Ω ±1%, 10μF/16V")
         form.addRow("规格", self._spec_edit)
 
-        # 单位
-        self._unit_edit = QLineEdit("个")
-        form.addRow("计量单位 *", self._unit_edit)
-
-        # 当前库存（编辑模式下可手动修正）
+        # 库存 + 单位（同一行）
+        stock_row = QHBoxLayout()
         self._stock_spin = QSpinBox()
         self._stock_spin.setRange(0, 999999)
         self._stock_spin.setValue(0)
-        if self._is_edit:
-            form.addRow("当前库存", self._stock_spin)
-        else:
-            self._stock_spin.setVisible(False)
+        stock_row.addWidget(self._stock_spin)
+
+        self._unit_combo = QComboBox()
+        self._unit_combo.setEditable(True)
+        self._unit_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self._unit_combo.addItems(["个", "只", "粒", "块", "片", "米", "卷", "包", "盘", "套", "条", "根"])
+        self._unit_combo.setCurrentText("个")
+        self._unit_combo.setMinimumWidth(80)
+        stock_row.addWidget(self._unit_combo)
+        form.addRow("库存 / 单位 *", stock_row)
 
         # 预警阈值
         self._threshold_spin = QSpinBox()
         self._threshold_spin.setRange(0, 999999)
         self._threshold_spin.setValue(10)
         form.addRow("预警阈值", self._threshold_spin)
+
+        # 供应商（可编辑下拉框，支持历史匹配）
+        self._supplier_combo = QComboBox()
+        self._supplier_combo.setEditable(True)
+        self._supplier_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self._supplier_combo.setPlaceholderText("输入或选择供应商")
+        self._supplier_combo.addItems(material_service.get_distinct_suppliers())
+        self._supplier_combo.setCurrentText("")
+        form.addRow("供应商", self._supplier_combo)
 
         # 分类
         self._category_combo = QComboBox()
@@ -142,10 +154,11 @@ class MaterialDialog(QDialog):
         self._model_edit.setText(d.get("model", ""))
         self._package_edit.setText(d.get("package_type", ""))
         self._spec_edit.setText(d.get("specification", ""))
-        self._unit_edit.setText(d.get("unit", "个"))
+        self._unit_combo.setCurrentText(d.get("unit", "个"))
         self._stock_spin.setValue(d.get("current_stock", 0))
         self._threshold_spin.setValue(d.get("warning_threshold", 10))
         self._location_edit.setText(d.get("storage_location", ""))
+        self._supplier_combo.setCurrentText(d.get("supplier", ""))
         self._datasheet_edit.setText(d.get("datasheet_path", ""))
         self._image_edit.setText(d.get("image_path", ""))
         self._remarks_edit.setPlainText(d.get("remarks", ""))
@@ -186,7 +199,7 @@ class MaterialDialog(QDialog):
 
     def _on_save(self):
         name = self._name_edit.text().strip()
-        unit = self._unit_edit.text().strip()
+        unit = self._unit_combo.currentText().strip()
 
         if not name:
             QMessageBox.warning(self, "提示", "物料名称不能为空")
@@ -194,7 +207,7 @@ class MaterialDialog(QDialog):
             return
         if not unit:
             QMessageBox.warning(self, "提示", "计量单位不能为空")
-            self._unit_edit.setFocus()
+            self._unit_combo.setFocus()
             return
 
         self.result_data = {
@@ -205,11 +218,11 @@ class MaterialDialog(QDialog):
             "unit": unit,
             "warning_threshold": self._threshold_spin.value(),
             "category_id": self._category_combo.currentData(),
+            "supplier": self._supplier_combo.currentText().strip(),
             "storage_location": self._location_edit.text().strip(),
             "datasheet_path": self._datasheet_edit.text().strip(),
             "image_path": self._image_edit.text().strip(),
             "remarks": self._remarks_edit.toPlainText().strip(),
         }
-        if self._is_edit:
-            self.result_data["current_stock"] = self._stock_spin.value()
+        self.result_data["current_stock"] = self._stock_spin.value()
         self.accept()

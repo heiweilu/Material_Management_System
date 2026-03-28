@@ -41,6 +41,7 @@ def _run_sqlite_migrations():
             ("storage_location", "VARCHAR(200)", "''"),
             ("datasheet_path", "VARCHAR(500)", "''"),
             ("image_path", "VARCHAR(500)", "''"),
+            ("supplier", "VARCHAR(200)", "''"),
         ]
         for col_name, sql_type, default in new_cols:
             if col_name not in cols:
@@ -70,7 +71,7 @@ def _migrate_materials_v2():
     keep_cols = [
         "id", "material_name", "model", "package_type", "specification",
         "unit", "current_stock", "warning_threshold", "category_id",
-        "storage_location", "datasheet_path", "image_path",
+        "storage_location", "supplier", "datasheet_path", "image_path",
         "remarks", "created_at", "updated_at",
     ]
     cols_csv = ", ".join(keep_cols)

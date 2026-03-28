@@ -22,9 +22,8 @@ class MaterialPage(QWidget):
         ("型号", "model"),
         ("封装", "package_type"),
         ("规格", "specification"),
-        ("单位", "unit"),
-        ("当前库存", "current_stock"),
-        ("预警阈值", "warning_threshold"),
+        ("库存", "_stock_with_unit"),
+        ("供应商", "supplier"),
         ("分类", "_category_name"),
         ("存放位置", "storage_location"),
     ]
@@ -126,10 +125,13 @@ class MaterialPage(QWidget):
         for row, m in enumerate(self._materials):
             is_low = (m.current_stock <= m.warning_threshold)
             cat_name = m.category.name if m.category else ""
+            stock_with_unit = f"{m.current_stock} {m.unit}" if m.unit else str(m.current_stock)
 
             for col, (_, attr) in enumerate(self._COLUMNS):
                 if attr == "_category_name":
                     val = cat_name
+                elif attr == "_stock_with_unit":
+                    val = stock_with_unit
                 else:
                     val = getattr(m, attr, "")
                 item = QTableWidgetItem(str(val) if val is not None else "")
@@ -173,6 +175,7 @@ class MaterialPage(QWidget):
             "current_stock": m.current_stock,
             "warning_threshold": m.warning_threshold,
             "category_id": m.category_id,
+            "supplier": getattr(m, "supplier", ""),
             "storage_location": m.storage_location,
             "datasheet_path": m.datasheet_path,
             "image_path": getattr(m, "image_path", ""),

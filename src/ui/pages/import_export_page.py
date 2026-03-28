@@ -98,7 +98,7 @@ class ImportExportPage(QWidget):
     _EXPORT_HEADERS = [
         "material_name", "model", "package_type",
         "specification", "unit", "current_stock", "warning_threshold",
-        "storage_location", "datasheet_path", "remarks",
+        "supplier", "storage_location", "datasheet_path", "remarks",
     ]
 
     def _get_export_rows(self) -> list[list]:
