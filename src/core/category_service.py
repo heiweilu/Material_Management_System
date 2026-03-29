@@ -9,12 +9,27 @@ logger = logging.getLogger(__name__)
 
 
 def get_all_categories() -> list[Category]:
-    """获取所有分类（平铺列表）"""
+    """获取所有分类（按树形层级顺序：父节点后紧跟其子节点）"""
     session = get_session()
     try:
-        results = session.query(Category).order_by(Category.sort_order, Category.name).all()
+        all_cats = session.query(Category).order_by(Category.sort_order, Category.name).all()
         session.expunge_all()
-        return results
+
+        # 构建 parent_id -> children 映射
+        children_map: dict[int | None, list[Category]] = {}
+        for cat in all_cats:
+            children_map.setdefault(cat.parent_id, []).append(cat)
+
+        # 递归展开为树形顺序
+        result: list[Category] = []
+
+        def _walk(parent_id: int | None):
+            for cat in children_map.get(parent_id, []):
+                result.append(cat)
+                _walk(cat.id)
+
+        _walk(None)
+        return result
     finally:
         session.close()
 
@@ -30,6 +45,24 @@ def get_root_categories() -> list[Category]:
         return results
     finally:
         session.close()
+
+
+def get_descendant_ids(category_id: int) -> list[int]:
+    """获取某分类自身及其所有子孙分类的 ID 列表"""
+    all_cats = get_all_categories()
+    children_map: dict[int | None, list[Category]] = {}
+    for cat in all_cats:
+        children_map.setdefault(cat.parent_id, []).append(cat)
+
+    result = [category_id]
+
+    def _collect(pid: int):
+        for cat in children_map.get(pid, []):
+            result.append(cat.id)
+            _collect(cat.id)
+
+    _collect(category_id)
+    return result
 
 
 def get_children(parent_id: int) -> list[Category]:

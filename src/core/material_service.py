@@ -9,6 +9,7 @@ from sqlalchemy import distinct
 
 from src.db.database import get_session
 from src.db.models import Material, OperationLog
+from src.core import category_service
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,9 @@ def get_all_materials(category_id: int | None = None) -> list[Material]:
             joinedload(Material.category),
         )
         if category_id is not None:
-            q = q.filter(Material.category_id == category_id)
-        results = q.order_by(Material.material_name).all()
+            cat_ids = category_service.get_descendant_ids(category_id)
+            q = q.filter(Material.category_id.in_(cat_ids))
+        results = q.order_by(Material.id).all()
         session.expunge_all()
         return results
     finally:
@@ -44,8 +46,9 @@ def search_materials(keyword: str, category_id: int | None = None) -> list[Mater
             )
         )
         if category_id is not None:
-            q = q.filter(Material.category_id == category_id)
-        results = q.order_by(Material.material_name).all()
+            cat_ids = category_service.get_descendant_ids(category_id)
+            q = q.filter(Material.category_id.in_(cat_ids))
+        results = q.order_by(Material.id).all()
         session.expunge_all()
         return results
     finally:

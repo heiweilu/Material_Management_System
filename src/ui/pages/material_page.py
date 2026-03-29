@@ -28,6 +28,13 @@ class MaterialPage(QWidget):
         ("存放位置", "storage_location"),
     ]
 
+    _SORT_OPTIONS = [
+        ("添加顺序", "id"),
+        ("物料名称", "name"),
+        ("库存数量", "stock"),
+        ("分类名称", "category"),
+    ]
+
     def __init__(self, config: dict, parent=None):
         super().__init__(parent)
         self.config = config
@@ -52,6 +59,20 @@ class MaterialPage(QWidget):
         self._cat_filter.setMinimumWidth(160)
         self._cat_filter.currentIndexChanged.connect(lambda _: self.refresh())
         top.addWidget(self._cat_filter, 1)
+
+        self._sort_combo = QComboBox()
+        self._sort_combo.setMinimumWidth(120)
+        for label, key in self._SORT_OPTIONS:
+            self._sort_combo.addItem(label, key)
+        self._sort_combo.currentIndexChanged.connect(lambda _: self.refresh())
+        top.addWidget(self._sort_combo)
+
+        self._sort_asc = True
+        self._sort_dir_btn = QPushButton("↑")
+        self._sort_dir_btn.setFixedWidth(32)
+        self._sort_dir_btn.setToolTip("升序")
+        self._sort_dir_btn.clicked.connect(self._toggle_sort_dir)
+        top.addWidget(self._sort_dir_btn)
 
         top.addStretch()
 
@@ -100,7 +121,28 @@ class MaterialPage(QWidget):
             self._materials = material_service.search_materials(keyword, cat_id)
         else:
             self._materials = material_service.get_all_materials(cat_id)
+        self._sort_materials()
         self._fill_table()
+
+    def _sort_materials(self):
+        """根据排序下拉框对物料列表排序"""
+        sort_key = self._sort_combo.currentData()
+        reverse = not self._sort_asc
+        if sort_key == "name":
+            self._materials.sort(key=lambda m: (m.material_name or "").lower(), reverse=reverse)
+        elif sort_key == "stock":
+            self._materials.sort(key=lambda m: m.current_stock, reverse=reverse)
+        elif sort_key == "category":
+            self._materials.sort(key=lambda m: (m.category.name if m.category else ""), reverse=reverse)
+        elif sort_key == "id":
+            self._materials.sort(key=lambda m: m.id, reverse=reverse)
+
+    def _toggle_sort_dir(self):
+        """切换升序/降序"""
+        self._sort_asc = not self._sort_asc
+        self._sort_dir_btn.setText("↑" if self._sort_asc else "↓")
+        self._sort_dir_btn.setToolTip("升序" if self._sort_asc else "降序")
+        self.refresh()
 
     def _reload_category_filter(self):
         """刷新分类下拉（保持当前选择）"""
