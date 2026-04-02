@@ -7,6 +7,9 @@
 ![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+
+![alt text](image.png)
+
 ## 功能概览
 
 | 模块 | 功能 |
